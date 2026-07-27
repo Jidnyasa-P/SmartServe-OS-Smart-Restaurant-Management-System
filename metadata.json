@@ -1,6 +1,6 @@
 {
   "name": "SmartServe OS",
-  "description": "Smart Restaurant Management System with Live Kitchen Order Board, Table Staff Map, QR Table Ordering, Supabase Security, and Gemini AI Operational Insights.",
+  "description": "Smart Restaurant Operating System with Live Kitchen KDS Board, Table Floor Map, Crypto QR Table Ordering, Firestore Security Rules, and Gemini AI Operational Insights.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

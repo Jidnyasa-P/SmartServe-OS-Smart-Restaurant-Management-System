@@ -1,27 +1,25 @@
 import React from 'react';
 import { useStore } from '../../context/StoreContext';
-import { getSupabaseStatus } from '../../lib/supabase';
 import { ShieldCheck, Lock, ShieldAlert, Key, Terminal, FileCode, CheckCircle2, XCircle } from 'lucide-react';
 
 export const SecurityAuditView: React.FC = () => {
   const { auditLogs, currentRole, addAuditLog } = useStore();
-  const supabaseStatus = getSupabaseStatus();
 
   const rlsMatrix = [
-    { resource: 'menu_items (Read)', customer: 'ALLOW (Public)', staff: 'ALLOW', kitchen: 'ALLOW', manager: 'ALLOW', admin: 'ALLOW' },
-    { resource: 'menu_items (86 Stock Write)', customer: 'DENIED (RLS)', staff: 'DENIED (RLS)', kitchen: 'ALLOW', manager: 'ALLOW', admin: 'ALLOW' },
-    { resource: 'orders (Customer Insert)', customer: 'ALLOW (Own Table)', staff: 'ALLOW', kitchen: 'ALLOW', manager: 'ALLOW', admin: 'ALLOW' },
-    { resource: 'orders (Status Update)', customer: 'DENIED (RLS)', staff: 'ALLOW', kitchen: 'ALLOW', manager: 'ALLOW', admin: 'ALLOW' },
-    { resource: 'inventory_items (Read/Write)', customer: 'DENIED (RLS)', staff: 'DENIED (RLS)', kitchen: 'READ ONLY', manager: 'ALLOW', admin: 'ALLOW' },
-    { resource: 'audit_logs (Insert/Inspect)', customer: 'DENIED (RLS)', staff: 'DENIED (RLS)', kitchen: 'DENIED (RLS)', manager: 'READ ONLY', admin: 'FULL ACCESS' },
+    { resource: 'menuItems (Read)', customer: 'ALLOW (Public)', staff: 'ALLOW', kitchen: 'ALLOW', manager: 'ALLOW', admin: 'ALLOW' },
+    { resource: 'menuItems (86 Stock Write)', customer: 'DENIED (Rules/API)', staff: 'DENIED', kitchen: 'ALLOW (API)', manager: 'ALLOW (API)', admin: 'ALLOW' },
+    { resource: 'orders (Customer Insert)', customer: 'DENIED Direct (Express Transaction API)', staff: 'ALLOW (API)', kitchen: 'ALLOW (API)', manager: 'ALLOW', admin: 'ALLOW' },
+    { resource: 'orders (Status Update)', customer: 'DENIED (Rules/API)', staff: 'ALLOW (API)', kitchen: 'ALLOW (API)', manager: 'ALLOW', admin: 'ALLOW' },
+    { resource: 'inventory (Read/Write)', customer: 'DENIED (Rules)', staff: 'DENIED (Rules)', kitchen: 'READ ONLY', manager: 'ALLOW (API)', admin: 'ALLOW' },
+    { resource: 'auditLogs (Insert/Inspect)', customer: 'DENIED (Rules)', staff: 'DENIED (Rules)', kitchen: 'DENIED (Rules)', manager: 'READ ONLY', admin: 'FULL ACCESS' },
   ];
 
   const triggerTestViolation = () => {
     addAuditLog(
-      'UNAUTHORIZED_SQL_ATTEMPT',
+      'UNAUTHORIZED_DB_ATTEMPT',
       'tables:delete_all',
       'blocked',
-      `RLS BLOCKED: Active role '${currentRole}' attempted prohibited operation DELETE on database tables.`
+      `FIRESTORE RULE BLOCKED: Active role '${currentRole}' attempted prohibited operation DELETE on database collections.`
     );
   };
 
@@ -35,7 +33,7 @@ export const SecurityAuditView: React.FC = () => {
           </div>
           <div>
             <h1 className="text-xl sm:text-2xl font-extrabold">
-              Supabase RLS Security Policy & Audit Inspector
+              Firestore Security Policy & Audit Inspector
             </h1>
             <p className="text-xs text-slate-400">
               Zero-trust architecture • Role claims enforcement • Immutable audit stream
@@ -46,14 +44,14 @@ export const SecurityAuditView: React.FC = () => {
         <div className="flex items-center gap-3">
           <span className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-emerald-400 font-mono font-bold flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-            {supabaseStatus.status}
+            Firestore Active (Rules Protected)
           </span>
 
           <button
             onClick={triggerTestViolation}
             className="px-4 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 text-xs font-bold transition-all"
           >
-            Simulate RLS Policy Block
+            Simulate Security Policy Block
           </button>
         </div>
       </div>

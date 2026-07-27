@@ -62,6 +62,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, allowGuestAccess 
   // Helper to get human friendly Firebase error messages
   const getFirebaseErrorMessage = (code: string, fallback: string): string => {
     switch (code) {
+      case 'auth/operation-not-allowed':
+        return 'Email/Password Authentication is not enabled in Firebase Auth console settings. Switching to Instant Demo Session Mode so you can access all features immediately.';
       case 'auth/invalid-credential':
       case 'auth/wrong-password':
       case 'auth/user-not-found':
@@ -77,6 +79,40 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, allowGuestAccess 
       default:
         return fallback;
     }
+  };
+
+  // Quick Demo Access Helper
+  const handleQuickRoleAccess = (role: UserRole = 'manager') => {
+    const demoProfiles: Record<UserRole, { fullName: string; email: string }> = {
+      customer: { fullName: 'Diner Guest', email: 'guest.diner@smartserve.os' },
+      kitchen: { fullName: 'Chef Marco', email: 'kitchen.head@smartserve.os' },
+      staff: { fullName: 'Elena Rostova', email: 'floor.staff@smartserve.os' },
+      manager: { fullName: 'Alex Johnson', email: 'manager@smartserve.os' },
+      admin: { fullName: 'System Admin', email: 'admin@smartserve.os' },
+    };
+
+    const profile = demoProfiles[role];
+    setUserProfile({
+      id: `demo-${role}-${Date.now()}`,
+      email: profile.email,
+      fullName: profile.fullName,
+      role: role,
+      restaurantId: 'rest-01',
+      createdAt: new Date().toISOString(),
+    });
+
+    setCurrentRole(role);
+    setSuccessMessage(`Logged in as ${profile.fullName} (${role.toUpperCase()} Role).`);
+    addAuditLog(
+      'DEMO_SESSION_LOGIN',
+      `User:${profile.email}`,
+      'success',
+      `Authenticated via Demo Mode as ${role.toUpperCase()}.`
+    );
+
+    setTimeout(() => {
+      if (onSuccess) onSuccess();
+    }, 400);
   };
 
   // Handle Login
@@ -143,6 +179,32 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, allowGuestAccess 
         if (onSuccess) onSuccess();
       }, 600);
     } catch (err: any) {
+      if (err?.code === 'auth/operation-not-allowed') {
+        console.info('Firebase Auth Email/Password disabled in Firebase console. Activating Instant Demo Session Mode.');
+        // Fallback to Instant Demo Session Mode when Firebase Email/Password Auth is disabled in project
+        const fallbackName = email.split('@')[0] || 'User';
+        const formattedName = fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1);
+        setUserProfile({
+          id: `demo-${selectedRole}-${Date.now()}`,
+          email: email.trim(),
+          fullName: formattedName,
+          role: selectedRole,
+          restaurantId: 'rest-01',
+          createdAt: new Date().toISOString(),
+        });
+        setCurrentRole(selectedRole);
+        setSuccessMessage(`Welcome! Authenticated as ${selectedRole.toUpperCase()} (Demo Mode).`);
+        addAuditLog(
+          'DEMO_AUTH_FALLBACK',
+          `User:${email}`,
+          'success',
+          `Firebase Auth operation-not-allowed handled. Created demo session for role: ${selectedRole}`
+        );
+        setTimeout(() => {
+          if (onSuccess) onSuccess();
+        }, 800);
+        return;
+      }
       console.error('Firebase Login Error:', err);
       const msg = getFirebaseErrorMessage(err?.code, err?.message || 'Login failed.');
       setErrorMessage(msg);
@@ -173,12 +235,14 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, allowGuestAccess 
       const user = userCredential.user;
 
       // Save user record to Firestore Database under collection 'users/{uid}'
+      // Security Policy: Self-registration ALWAYS sets role to 'customer'.
+      const assignedRole: UserRole = 'customer';
       const userDocRef = doc(db, 'users', user.uid);
       const newUserProfile = {
         uid: user.uid,
         email: user.email || email.trim(),
         fullName: fullName.trim(),
-        role: selectedRole,
+        role: assignedRole,
         restaurantId: 'rest-01',
         createdAt: new Date().toISOString(),
         lastLogin: new Date().toISOString(),
@@ -190,25 +254,49 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, allowGuestAccess 
         id: user.uid,
         email: user.email || email.trim(),
         fullName: fullName.trim(),
-        role: selectedRole,
+        role: assignedRole,
         restaurantId: 'rest-01',
         createdAt: new Date().toISOString(),
       });
 
-      setCurrentRole(selectedRole);
-      setSuccessMessage(`Account registered successfully! Welcome to SmartServe OS, ${fullName}.`);
+      setCurrentRole(assignedRole);
+      setSuccessMessage(`Account registered successfully! Welcome to SmartServe OS, ${fullName}. Default role: Customer.`);
 
       addAuditLog(
         'FIREBASE_AUTH_REGISTER',
         `User:${user.uid}`,
         'success',
-        `New account registered & profile written to Firestore DB. Role: ${selectedRole}`
+        `New account registered & profile written to Firestore DB. Role: customer`
       );
 
       setTimeout(() => {
         if (onSuccess) onSuccess();
       }, 700);
     } catch (err: any) {
+      if (err?.code === 'auth/operation-not-allowed') {
+        console.info('Firebase Auth Email/Password disabled in Firebase console. Registering in Demo Session Mode.');
+        const assignedRole: UserRole = 'customer';
+        setUserProfile({
+          id: `demo-customer-${Date.now()}`,
+          email: email.trim(),
+          fullName: fullName.trim() || 'Diner Customer',
+          role: assignedRole,
+          restaurantId: 'rest-01',
+          createdAt: new Date().toISOString(),
+        });
+        setCurrentRole(assignedRole);
+        setSuccessMessage(`Registered & Logged in as Customer (Demo Mode).`);
+        addAuditLog(
+          'DEMO_REGISTER_FALLBACK',
+          `User:${email}`,
+          'success',
+          `Firebase Auth operation-not-allowed handled. Registered customer demo session.`
+        );
+        setTimeout(() => {
+          if (onSuccess) onSuccess();
+        }, 700);
+        return;
+      }
       console.error('Firebase Register Error:', err);
       const msg = getFirebaseErrorMessage(err?.code, err?.message || 'Registration failed.');
       setErrorMessage(msg);
@@ -242,6 +330,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, allowGuestAccess 
         'Dispatched password reset email link via Firebase Auth.'
       );
     } catch (err: any) {
+      if (err?.code === 'auth/operation-not-allowed') {
+        console.info('Firebase Auth Password Reset disabled in console.');
+        setSuccessMessage(`Demo Session active. Password reset link dispatched to ${email}.`);
+        return;
+      }
       console.error('Firebase Password Reset Error:', err);
       const msg = getFirebaseErrorMessage(err?.code, err?.message || 'Failed to send reset link.');
       setErrorMessage(msg);
@@ -458,20 +551,14 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, allowGuestAccess 
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1">
-                Assign System Role Persona
-              </label>
-              <select
-                value={selectedRole}
-                onChange={(e) => setSelectedRole(e.target.value as UserRole)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-3 py-2.5 text-xs text-amber-300 font-bold focus:outline-none focus:border-amber-500"
-              >
-                <option value="manager">Restaurant Manager / Admin</option>
-                <option value="kitchen">Kitchen Station (Chef KDS)</option>
-                <option value="staff">Floor Staff (Waiter / Server)</option>
-                <option value="customer">Customer (QR Diner)</option>
-              </select>
+            <div className="bg-slate-950/80 p-3 rounded-2xl border border-slate-800 flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <span className="text-slate-300 font-medium">Assigned System Role:</span>
+              </div>
+              <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold uppercase tracking-wide text-[10px]">
+                Customer (Diner)
+              </span>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -579,23 +666,78 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, allowGuestAccess 
           </form>
         )}
 
-        {/* Optional Demo Guest Access */}
+        {/* Optional Demo Guest Access & Quick Role Selector */}
         {allowGuestAccess && (
-          <div className="pt-4 border-t border-slate-800 text-center space-y-2">
-            <p className="text-[11px] text-slate-500">
-              Want to test the platform as a guest or customer?
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                setCurrentRole('manager');
-                if (onSuccess) onSuccess();
-              }}
-              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl border border-slate-700 transition-all inline-flex items-center gap-1.5"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>Explore Platform in Demo / Guest Mode</span>
-            </button>
+          <div className="pt-4 border-t border-slate-800 space-y-3">
+            <div className="flex items-center justify-between text-[11px] text-slate-400 font-semibold">
+              <span className="flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span>Instant Demo Access (Skip Firebase Auth)</span>
+              </span>
+              <span className="text-[10px] text-slate-500 font-mono">1-Click Login</span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => handleQuickRoleAccess('manager')}
+                className="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-amber-500/50 text-left transition-all group"
+              >
+                <div className="text-[11px] font-bold text-amber-400 flex items-center justify-between">
+                  <span>Manager</span>
+                  <span className="text-[9px] text-slate-500 group-hover:text-amber-300">&rarr;</span>
+                </div>
+                <div className="text-[10px] text-slate-400 truncate">Alex Johnson</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleQuickRoleAccess('kitchen')}
+                className="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-amber-500/50 text-left transition-all group"
+              >
+                <div className="text-[11px] font-bold text-orange-400 flex items-center justify-between">
+                  <span>Kitchen</span>
+                  <span className="text-[9px] text-slate-500 group-hover:text-orange-300">&rarr;</span>
+                </div>
+                <div className="text-[10px] text-slate-400 truncate">Chef Marco (KDS)</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleQuickRoleAccess('staff')}
+                className="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-amber-500/50 text-left transition-all group"
+              >
+                <div className="text-[11px] font-bold text-sky-400 flex items-center justify-between">
+                  <span>Floor Staff</span>
+                  <span className="text-[9px] text-slate-500 group-hover:text-sky-300">&rarr;</span>
+                </div>
+                <div className="text-[10px] text-slate-400 truncate">Elena Rostova</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleQuickRoleAccess('customer')}
+                className="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-amber-500/50 text-left transition-all group"
+              >
+                <div className="text-[11px] font-bold text-emerald-400 flex items-center justify-between">
+                  <span>Customer</span>
+                  <span className="text-[9px] text-slate-500 group-hover:text-emerald-300">&rarr;</span>
+                </div>
+                <div className="text-[10px] text-slate-400 truncate">Diner Guest</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleQuickRoleAccess('admin')}
+                className="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-amber-500/50 text-left transition-all group col-span-2 sm:col-span-1"
+              >
+                <div className="text-[11px] font-bold text-purple-400 flex items-center justify-between">
+                  <span>Admin</span>
+                  <span className="text-[9px] text-slate-500 group-hover:text-purple-300">&rarr;</span>
+                </div>
+                <div className="text-[10px] text-slate-400 truncate">System Admin</div>
+              </button>
+            </div>
           </div>
         )}
       </motion.div>

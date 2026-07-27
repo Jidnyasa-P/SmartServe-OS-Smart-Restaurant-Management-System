@@ -121,71 +121,73 @@ export const Header: React.FC<HeaderProps> = ({ onOpenQrModal, onOpenAuthModal }
             <span>Table QR Simulator</span>
           </button>
 
-          {/* Role Switcher Pill */}
-          <div className="relative">
-            <button
-              onClick={() => setShowRoleDropdown(!showRoleDropdown)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all ${roleConfig[currentRole].color}`}
-            >
-              {roleConfig[currentRole].icon}
-              <span className="hidden sm:inline">
-                Role: {roleConfig[currentRole].label.split(' ')[0]}
-              </span>
-              <ChevronDown className="w-3.5 h-3.5 opacity-70" />
-            </button>
+          {/* Demo Role Switcher Pill - Active only when VITE_DEMO_MODE=true */}
+          {import.meta.env.VITE_DEMO_MODE === 'true' && (
+            <div className="relative">
+              <button
+                onClick={() => setShowRoleDropdown(!showRoleDropdown)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all ${roleConfig[currentRole].color}`}
+              >
+                {roleConfig[currentRole].icon}
+                <span className="hidden sm:inline">
+                  Demo View: {roleConfig[currentRole].label.split(' ')[0]}
+                </span>
+                <ChevronDown className="w-3.5 h-3.5 opacity-70" />
+              </button>
 
-            {/* Role Dropdown */}
-            <AnimatePresence>
-              {showRoleDropdown && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  className="absolute right-0 mt-2 w-72 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl p-2 z-50 text-slate-100"
-                >
-                  <div className="px-3 py-2 border-b border-slate-800 mb-1">
-                    <p className="text-[11px] uppercase tracking-wider font-semibold text-slate-400">
-                      Select Active User Persona
-                    </p>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      Simulates role-based access & RLS scope.
-                    </p>
-                  </div>
-                  {(Object.keys(roleConfig) as UserRole[]).map((r) => (
-                    <button
-                      key={r}
-                      onClick={() => {
-                        setCurrentRole(r);
-                        setShowRoleDropdown(false);
-                        if (r === 'customer') setActiveTab('customer');
-                        else if (r === 'kitchen') setActiveTab('kitchen');
-                        else if (r === 'staff') setActiveTab('staff');
-                        else if (r === 'manager') setActiveTab('analytics');
-                        else if (r === 'admin') setActiveTab('security');
-                      }}
-                      className={`w-full text-left p-2.5 rounded-xl flex items-start gap-3 transition-colors ${
-                        currentRole === r
-                          ? 'bg-amber-500/15 border border-amber-500/30 text-amber-300'
-                          : 'hover:bg-slate-800/80 text-slate-300'
-                      }`}
-                    >
-                      <div className="mt-0.5 p-1.5 rounded-lg bg-slate-800 border border-slate-700">
-                        {roleConfig[r].icon}
-                      </div>
-                      <div>
-                        <div className="font-semibold text-xs text-slate-100">
-                          {roleConfig[r].label}
+              {/* Role Dropdown */}
+              <AnimatePresence>
+                {showRoleDropdown && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute right-0 mt-2 w-72 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl p-2 z-50 text-slate-100"
+                  >
+                    <div className="px-3 py-2 border-b border-slate-800 mb-1">
+                      <p className="text-[11px] uppercase tracking-wider font-semibold text-amber-400">
+                        Demo View Switcher (UI Only)
+                      </p>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        Changes UI view for testing. Does NOT grant server API authorization.
+                      </p>
+                    </div>
+                    {(Object.keys(roleConfig) as UserRole[]).map((r) => (
+                      <button
+                        key={r}
+                        onClick={() => {
+                          setCurrentRole(r);
+                          setShowRoleDropdown(false);
+                          if (r === 'customer') setActiveTab('customer');
+                          else if (r === 'kitchen') setActiveTab('kitchen');
+                          else if (r === 'staff') setActiveTab('staff');
+                          else if (r === 'manager') setActiveTab('analytics');
+                          else if (r === 'admin') setActiveTab('security');
+                        }}
+                        className={`w-full text-left p-2.5 rounded-xl flex items-start gap-3 transition-colors ${
+                          currentRole === r
+                            ? 'bg-amber-500/15 border border-amber-500/30 text-amber-300'
+                            : 'hover:bg-slate-800/80 text-slate-300'
+                        }`}
+                      >
+                        <div className="mt-0.5 p-1.5 rounded-lg bg-slate-800 border border-slate-700">
+                          {roleConfig[r].icon}
                         </div>
-                        <div className="text-[11px] text-slate-400 leading-tight mt-0.5">
-                          {roleConfig[r].desc}
+                        <div>
+                          <div className="font-semibold text-xs text-slate-100">
+                            {roleConfig[r].label}
+                          </div>
+                          <div className="text-[11px] text-slate-400 leading-tight mt-0.5">
+                            {roleConfig[r].desc}
+                          </div>
                         </div>
-                      </div>
-                    </button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
 
           {/* Notifications Center */}
           <div className="relative">

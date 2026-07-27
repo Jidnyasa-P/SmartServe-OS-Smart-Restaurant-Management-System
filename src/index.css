@@ -1,1 +1,112 @@
 @import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background-color: #171714;
+    color: #171714;
+  }
+  
+  h1, h2, h3, .font-serif-heading {
+    font-family: 'Instrument Serif', serif;
+  }
+}
+
+.font-serif {
+  font-family: 'Instrument Serif', Georgia, serif;
+}
+
+.font-sans {
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Custom Editorial Theme Colors */
+.bg-paper {
+  background-color: #F4F0E8;
+}
+
+.bg-paper-dark {
+  background-color: #EAE5D9;
+}
+
+.bg-ink {
+  background-color: #171714;
+}
+
+.bg-steel {
+  background-color: #D9DBD8;
+}
+
+.bg-saffron {
+  background-color: #E7A23B;
+}
+
+.bg-tomato {
+  background-color: #D84A3A;
+}
+
+.bg-fresh {
+  background-color: #1F6B4F;
+}
+
+/* Receipt Perforations */
+.receipt-perforation-top {
+  position: relative;
+}
+.receipt-perforation-top::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background-image: radial-gradient(circle, transparent, transparent 50%, #F4F0E8 50%, #F4F0E8 100%);
+  background-size: 12px 12px;
+}
+
+.receipt-sawtooth-bottom {
+  position: relative;
+}
+.receipt-sawtooth-bottom::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: linear-gradient(135deg, #F4F0E8 4px, transparent 0),
+              linear-gradient(-135deg, #F4F0E8 4px, transparent 0);
+  background-size: 8px 8px;
+}
+
+/* Status Stamp Effect */
+.stamp-badge {
+  border: 2px solid currentColor;
+  padding: 2px 8px;
+  text-transform: uppercase;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  font-size: 11px;
+  border-radius: 3px;
+  display: inline-block;
+  transform: rotate(-3deg);
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.05);
+}
+
+/* Paper texture noise overlay */
+.paper-pattern {
+  background-color: #F4F0E8;
+  background-image: radial-gradient(#171714 0.5px, transparent 0.5px), radial-gradient(#171714 0.5px, #F4F0E8 0.5px);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+  background-opacity: 0.03;
+}
+
+/* Hide scrollbar for clean story navigation */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

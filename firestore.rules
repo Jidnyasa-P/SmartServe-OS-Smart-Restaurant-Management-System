@@ -1,12 +1,73 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /users/{userId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == userId;
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
     }
+    
+    // User Profile Rules:
+    // - Authenticated users can read profiles
+    // - Users can create their own profile, but role MUST be 'customer'
+    // - Users can update basic fields (e.g. fullName), but CANNOT modify 'role' or 'restaurantId'
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() 
+        && request.auth.uid == userId 
+        && request.resource.data.role == 'customer';
+      allow update: if isAuthenticated() 
+        && request.auth.uid == userId 
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.restaurantId == resource.data.restaurantId;
+      allow delete: if false;
+    }
+
+    // Menu Items: Read-only for clients. Writes must go through protected Express API.
+    match /menuItems/{itemId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Categories: Read-only for clients.
+    match /categories/{catId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Restaurant Tables: Read-only for clients.
+    match /tables/{tableId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Orders: Read-only for authenticated operational staff/users. All writes MUST go through Express API transaction.
+    match /orders/{orderId} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    // Inventory: Read-only for authenticated staff. Writes blocked for clients.
+    match /inventory/{inventoryId} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    // Audit Logs: Read-only for authenticated managers/admins. Writes blocked for clients.
+    match /auditLogs/{logId} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    // Notifications: Read-only for authenticated staff.
+    match /notifications/{notifId} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    // DEFAULT DENY FOR ALL OTHER PATHS
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if false;
     }
   }
 }

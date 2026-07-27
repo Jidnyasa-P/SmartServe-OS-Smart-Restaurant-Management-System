@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
 import { UserRole } from '../../types';
-import { getSupabaseStatus } from '../../lib/supabase';
 import {
   User,
   Mail,
@@ -24,8 +23,6 @@ export const AuthSetupView: React.FC = () => {
     updateRestaurant,
     addAuditLog,
   } = useStore();
-
-  const supabaseStatus = getSupabaseStatus();
 
   // Auth Form State
   const [isLogin, setIsLogin] = useState<boolean>(true);

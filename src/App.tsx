@@ -31,6 +31,8 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
+import { FromScanToServeOverview } from './components/story/FromScanToServeOverview';
+
 function MainAppContent() {
   const {
     activeTab,
@@ -198,144 +200,8 @@ function MainAppContent() {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -15 }}
-                className="space-y-8"
               >
-                {/* Hero Showcase Banner */}
-                <div className="bg-gradient-to-r from-slate-900 via-amber-950/40 to-slate-900 rounded-3xl p-8 border border-amber-500/30 shadow-2xl relative overflow-hidden">
-                  <div className="absolute right-0 top-0 translate-x-1/3 -translate-y-1/3 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-
-                  <div className="max-w-3xl space-y-4 relative z-10">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold">
-                      <Zap className="w-3.5 h-3.5" />
-                      <span>SmartServe OS • Operational Engine Active</span>
-                    </div>
-
-                    <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
-                      End-to-End Smart Restaurant Operations
-                    </h1>
-
-                    <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
-                      A complete, zero-friction SaaS platform solving real-world operational challenges: live dish stock toggles, secure QR menu ordering, kitchen display sync (KDS), floor staff alert routing, and server-side Gemini AI analytics.
-                    </p>
-
-                    <div className="pt-2 flex flex-wrap items-center gap-3">
-                      <button
-                        onClick={simulateCustomerOrder}
-                        className="px-6 py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-xl shadow-amber-500/20 flex items-center gap-2 transition-all hover:scale-105"
-                      >
-                        <Play className="w-4 h-4 fill-slate-950" />
-                        <span>Simulate Live Customer Order</span>
-                      </button>
-
-                      <button
-                        onClick={() => setActiveTab('customer')}
-                        className="px-6 py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold text-xs flex items-center gap-2 transition-all"
-                      >
-                        <span>Open Customer QR Portal</span>
-                        <ArrowRight className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Interactive Journey Nodes Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <div
-                    onClick={() => setActiveTab('customer')}
-                    className="p-6 rounded-3xl bg-slate-900 border border-slate-800 hover:border-amber-500/50 cursor-pointer space-y-3 transition-all hover:scale-[1.02] shadow-xl"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center">
-                      <QrCode className="w-5 h-5" />
-                    </div>
-                    <h3 className="font-extrabold text-lg">1. Customer QR Menu & Cart</h3>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      Diners scan table QR token, view live dish stock, customize options with prep notes, and send orders directly to the kitchen.
-                    </p>
-                    <span className="text-xs font-bold text-emerald-400 flex items-center gap-1 pt-2">
-                      Test QR Menu &rarr;
-                    </span>
-                  </div>
-
-                  <div
-                    onClick={() => setActiveTab('menu')}
-                    className="p-6 rounded-3xl bg-slate-900 border border-slate-800 hover:border-amber-500/50 cursor-pointer space-y-3 transition-all hover:scale-[1.02] shadow-xl"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center">
-                      <UtensilsCrossed className="w-5 h-5" />
-                    </div>
-                    <h3 className="font-extrabold text-lg">2. Menu & Category Management</h3>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      Zod-validated menu creation, custom category sorting, live dish availability (86ing), and prep time management.
-                    </p>
-                    <span className="text-xs font-bold text-amber-400 flex items-center gap-1 pt-2">
-                      Manage Dishes & Categories &rarr;
-                    </span>
-                  </div>
-
-                  <div
-                    onClick={() => setActiveTab('tables')}
-                    className="p-6 rounded-3xl bg-slate-900 border border-slate-800 hover:border-amber-500/50 cursor-pointer space-y-3 transition-all hover:scale-[1.02] shadow-xl"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center">
-                      <Grid className="w-5 h-5" />
-                    </div>
-                    <h3 className="font-extrabold text-lg">3. Table Grid & QR Tokens</h3>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      Configure restaurant table layout, regenerate cryptographic QR security tokens, and generate printable tent cards.
-                    </p>
-                    <span className="text-xs font-bold text-cyan-400 flex items-center gap-1 pt-2">
-                      Manage Floor Tables & Tokens &rarr;
-                    </span>
-                  </div>
-
-                  <div
-                    onClick={() => setActiveTab('kitchen')}
-                    className="p-6 rounded-3xl bg-slate-900 border border-slate-800 hover:border-amber-500/50 cursor-pointer space-y-3 transition-all hover:scale-[1.02] shadow-xl"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center">
-                      <ChefHat className="w-5 h-5" />
-                    </div>
-                    <h3 className="font-extrabold text-lg">4. Kitchen Order KDS</h3>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      High-visibility order kanban (Pending, Cooking, Ready) with prep timers, overdue alarms, and instant 86 stock toggles.
-                    </p>
-                    <span className="text-xs font-bold text-rose-400 flex items-center gap-1 pt-2">
-                      Open Kitchen KDS &rarr;
-                    </span>
-                  </div>
-
-                  <div
-                    onClick={() => setActiveTab('staff')}
-                    className="p-6 rounded-3xl bg-slate-900 border border-slate-800 hover:border-amber-500/50 cursor-pointer space-y-3 transition-all hover:scale-[1.02] shadow-xl"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center justify-center">
-                      <LayoutGrid className="w-5 h-5" />
-                    </div>
-                    <h3 className="font-extrabold text-lg">5. Floor Staff Service Map</h3>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      Real-time floor grid with table status visualizer (Occupied, Needs Cleaning, Reserved) and instant waiter assistance alerts.
-                    </p>
-                    <span className="text-xs font-bold text-blue-400 flex items-center gap-1 pt-2">
-                      View Staff Floor Map &rarr;
-                    </span>
-                  </div>
-
-                  <div
-                    onClick={() => setActiveTab('ai')}
-                    className="p-6 rounded-3xl bg-slate-900 border border-slate-800 hover:border-amber-500/50 cursor-pointer space-y-3 transition-all hover:scale-[1.02] shadow-xl"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/30 flex items-center justify-center">
-                      <Sparkles className="w-5 h-5 animate-pulse text-purple-400" />
-                    </div>
-                    <h3 className="font-extrabold text-lg">6. Gemini AI Operational Engine</h3>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      Server-side Gemini AI generating dynamic pricing recommendations, yield optimization, waste alerts, and intelligent Q&A.
-                    </p>
-                    <span className="text-xs font-bold text-purple-400 flex items-center gap-1 pt-2">
-                      Launch Gemini AI Engine &rarr;
-                    </span>
-                  </div>
-                </div>
+                <FromScanToServeOverview />
               </motion.div>
             )}
 

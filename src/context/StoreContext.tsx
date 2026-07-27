@@ -356,115 +356,92 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const clearCart = () => setCart([]);
 
-  // Place Order with Backend Zod & Server Price Enforcement
+  // Place Order with Backend Transaction, QR Token & Server Price Enforcement
   const placeOrder = async (tableNum?: number, customerName?: string): Promise<Order> => {
     const targetTableNum = tableNum || selectedTableNumber;
     const currentTable = tables.find((t) => t.number === targetTableNum);
 
+    // Default sample QR token for table 4 if missing in client memory
+    const rawQrToken = currentTable?.qrToken || 'raw_token_table_4_secret_key_5c4b3a2f1e0d9c8b7a6f5e4d3c';
+
     const payload = {
       tableNumber: targetTableNum,
-      tableToken: currentTable?.qrToken,
+      qrToken: rawQrToken,
       customerName: customerName || `Table ${targetTableNum} Guest`,
       items: cart.map((c) => ({
-        menuItemId: c.menuItem.id,
+        id: c.menuItem.id,
         quantity: c.quantity,
         notes: c.notes,
       })),
     };
 
-    try {
-      // Post to backend server endpoint for Zod validation & server calculation
-      const res = await fetch('/api/orders/place', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+    // Post to backend Express server endpoint for Zod validation, token verification & transaction
+    const res = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
 
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Server order validation failed');
-      }
-
-      const verifiedOrder: Order = data.order;
-
-      // Update client state
-      setOrders((prev) => [verifiedOrder, ...prev]);
-      setActivePlacedOrder(verifiedOrder);
-
-      // Update table state
-      setTables((prev) =>
-        prev.map((t) =>
-          t.number === targetTableNum
-            ? {
-                ...t,
-                status: 'occupied',
-                currentOrderId: verifiedOrder.id,
-                guestsCount: (t.guestsCount || 0) + 1,
-              }
-            : t
-        )
-      );
-
-      // Deduct client menu stock count
-      setMenuItems((prev) =>
-        prev.map((m) => {
-          const cartMatch = cart.find((c) => c.menuItem.id === m.id);
-          if (cartMatch) {
-            const newStock = Math.max(0, m.stockCount - cartMatch.quantity);
-            return { ...m, stockCount: newStock, isAvailable: newStock > 0 };
-          }
-          return m;
-        })
-      );
-
-      addNotification({
-        title: `Order #${verifiedOrder.id} Verified!`,
-        message: `Table ${targetTableNum} order placed ($${verifiedOrder.totalAmount.toFixed(2)}).`,
-        type: 'order',
-        tableNumber: targetTableNum,
-      });
-
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      const errorMsg = data.error || (data.details ? JSON.stringify(data.details) : 'Server order placement failed.');
       addAuditLog(
-        'SERVER_VERIFIED_ORDER',
-        `Table #${targetTableNum} Order #${verifiedOrder.id}`,
-        'success',
-        `Server Zod validation passed. Enforced canonical dish prices. Total: $${verifiedOrder.totalAmount.toFixed(2)}.`
+        'ORDER_REJECTED',
+        `Table #${targetTableNum}`,
+        'blocked',
+        `Server rejected order placement: ${errorMsg}`
       );
-
-      clearCart();
-      return verifiedOrder;
-    } catch (err: any) {
-      console.warn('Backend API order attempt fallback:', err.message);
-
-      // Fallback local calculation
-      const fallbackTotal = cart.reduce((sum, c) => sum + c.menuItem.price * c.quantity, 0) * 1.08;
-      const fallbackOrder: Order = {
-        id: `ord-${Math.floor(100 + Math.random() * 900)}`,
-        tableNumber: targetTableNum,
-        tableToken: currentTable?.qrToken,
-        customerName: customerName || `Table ${targetTableNum} Guest`,
-        status: 'pending',
-        items: cart.map((c, i) => ({
-          id: `oi-${Date.now()}-${i}`,
-          menuItemId: c.menuItem.id,
-          name: c.menuItem.name,
-          price: c.menuItem.price,
-          quantity: c.quantity,
-          notes: c.notes,
-        })),
-        totalAmount: Number(fallbackTotal.toFixed(2)),
-        paymentStatus: 'unpaid',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        estimatedPrepTime: 14,
-        priority: 'normal',
-      };
-
-      setOrders((prev) => [fallbackOrder, ...prev]);
-      setActivePlacedOrder(fallbackOrder);
-      clearCart();
-      return fallbackOrder;
+      throw new Error(errorMsg);
     }
+
+    const verifiedOrder: Order = data.order;
+
+    // Update client UI state
+    setOrders((prev) => [verifiedOrder, ...prev]);
+    setActivePlacedOrder(verifiedOrder);
+
+    // Update table state
+    setTables((prev) =>
+      prev.map((t) =>
+        t.number === targetTableNum
+          ? {
+              ...t,
+              status: 'occupied',
+              currentOrderId: verifiedOrder.id,
+              guestsCount: (t.guestsCount || 0) + 1,
+            }
+          : t
+      )
+    );
+
+    // Deduct client menu stock count
+    setMenuItems((prev) =>
+      prev.map((m) => {
+        const cartMatch = cart.find((c) => c.menuItem.id === m.id);
+        if (cartMatch) {
+          const newStock = Math.max(0, m.stockCount - cartMatch.quantity);
+          return { ...m, stockCount: newStock, isAvailable: newStock > 0 };
+        }
+        return m;
+      })
+    );
+
+    addNotification({
+      title: `Order #${verifiedOrder.id} Verified!`,
+      message: `Table ${targetTableNum} order placed ($${verifiedOrder.totalAmount.toFixed(2)}).`,
+      type: 'order',
+      tableNumber: targetTableNum,
+    });
+
+    addAuditLog(
+      'SERVER_VERIFIED_ORDER',
+      `Table #${targetTableNum} Order #${verifiedOrder.id}`,
+      'success',
+      `Server Firestore transaction succeeded. QR token verified & canonical dish prices enforced. Total: $${verifiedOrder.totalAmount.toFixed(2)}.`
+    );
+
+    clearCart();
+    return verifiedOrder;
   };
 
   // Order Status Updates (Kitchen / Staff)

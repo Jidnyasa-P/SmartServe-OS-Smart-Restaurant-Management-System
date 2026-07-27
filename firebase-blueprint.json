@@ -2,17 +2,102 @@
   "entities": {
     "User": {
       "title": "User Profile",
-      "description": "Authenticated user profile data in SmartServe OS",
+      "description": "Authenticated user profile with role-based access control",
       "type": "object",
       "properties": {
         "uid": { "type": "string" },
         "email": { "type": "string" },
         "fullName": { "type": "string" },
-        "role": { "type": "string", "enum": ["manager", "kitchen", "staff", "customer"] },
+        "role": { "type": "string", "enum": ["customer", "staff", "kitchen", "manager", "admin"] },
+        "restaurantId": { "type": "string" },
         "createdAt": { "type": "string" },
         "lastLogin": { "type": "string" }
       },
-      "required": ["uid", "email", "fullName", "role"]
+      "required": ["uid", "email", "fullName", "role", "restaurantId"]
+    },
+    "MenuItem": {
+      "title": "Menu Item",
+      "description": "Dish or drink available on the restaurant menu",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "price": { "type": "number" },
+        "description": { "type": "string" },
+        "isAvailable": { "type": "boolean" },
+        "stockCount": { "type": "number" },
+        "prepTimeMinutes": { "type": "number" },
+        "isVegan": { "type": "boolean" },
+        "isGF": { "type": "boolean" },
+        "isSpicy": { "type": "boolean" },
+        "imageUrl": { "type": "string" }
+      },
+      "required": ["id", "name", "category", "price", "isAvailable", "stockCount"]
+    },
+    "RestaurantTable": {
+      "title": "Restaurant Table",
+      "description": "Physical floor dining table with crypto QR token hash",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "number": { "type": "number" },
+        "capacity": { "type": "number" },
+        "status": { "type": "string", "enum": ["available", "occupied", "reserved", "needs_cleaning"] },
+        "qrTokenHash": { "type": "string" },
+        "qrTokenExpiry": { "type": "string" },
+        "assignedStaffName": { "type": "string" },
+        "currentOrderId": { "type": "string" },
+        "waiterCalled": { "type": "boolean" }
+      },
+      "required": ["id", "number", "capacity", "status", "qrTokenHash"]
+    },
+    "Order": {
+      "title": "Customer Order",
+      "description": "Table dining order placed with verified QR token",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "tableNumber": { "type": "number" },
+        "qrTokenHash": { "type": "string" },
+        "customerName": { "type": "string" },
+        "items": { "type": "array" },
+        "subtotal": { "type": "number" },
+        "tax": { "type": "number" },
+        "totalAmount": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "cooking", "ready", "served", "completed", "cancelled"] },
+        "createdAt": { "type": "string" },
+        "estimatedPrepTime": { "type": "number" }
+      },
+      "required": ["id", "tableNumber", "items", "subtotal", "tax", "totalAmount", "status", "createdAt"]
+    },
+    "InventoryItem": {
+      "title": "Inventory Raw Ingredient",
+      "description": "Kitchen stock track for ingredient reordering",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "itemName": { "type": "string" },
+        "quantity": { "type": "number" },
+        "unit": { "type": "string" },
+        "reorderLevel": { "type": "number" },
+        "costPerUnit": { "type": "number" }
+      },
+      "required": ["id", "itemName", "quantity", "unit", "reorderLevel"]
+    },
+    "AuditLog": {
+      "title": "Security Audit Event",
+      "description": "Security and operational audit trail entry",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "action": { "type": "string" },
+        "actor": { "type": "string" },
+        "status": { "type": "string" },
+        "details": { "type": "string" }
+      },
+      "required": ["id", "timestamp", "action", "actor", "status"]
     }
   }
 }
