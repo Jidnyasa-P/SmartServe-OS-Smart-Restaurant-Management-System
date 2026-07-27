@@ -2,7 +2,7 @@
 
 > **VibeAthon6.0 Hackathon Submission (2K26)**  
 > **Problem Statement**: Smart Restaurant Management System  
-> **Team Name**: HackaHer
+> **Team Name**: SmartServe OS  
 > **Live Application**: [SmartServe OS Production App](https://ais-pre-p62wsrlpqzs2ldemu65zhi-461622340415.asia-southeast1.run.app) | [Development Build](https://ais-dev-p62wsrlpqzs2ldemu65zhi-461622340415.asia-southeast1.run.app)
 
 ---

@@ -11,6 +11,11 @@ import { ManagerAnalyticsView } from './components/views/ManagerAnalyticsView';
 import { AiInsightsView } from './components/views/AiInsightsView';
 import { SecurityAuditView } from './components/views/SecurityAuditView';
 import { AuthSetupView } from './components/views/AuthSetupView';
+import { AboutView } from './components/views/AboutView';
+import { ContactView } from './components/views/ContactView';
+import { PrivacyPolicyView } from './components/views/PrivacyPolicyView';
+import { TermsConditionsView } from './components/views/TermsConditionsView';
+import { Footer } from './components/Footer';
 import { AuthPage } from './components/auth/AuthPage';
 import { QrCodeModal } from './components/QrCodeModal';
 import {
@@ -214,30 +219,16 @@ function MainAppContent() {
             {activeTab === 'ai' && <AiInsightsView />}
             {activeTab === 'security' && <SecurityAuditView />}
             {activeTab === 'setup' && <AuthSetupView />}
+            {activeTab === 'about' && <AboutView onNavigateTab={setActiveTab} />}
+            {activeTab === 'contact' && <ContactView />}
+            {activeTab === 'privacy' && <PrivacyPolicyView />}
+            {activeTab === 'terms' && <TermsConditionsView />}
           </AnimatePresence>
         </main>
       </div>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-900 py-6 text-center text-xs text-slate-500 bg-slate-950">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <span>SmartServe OS • Full-Stack Restaurant Management System</span>
-          <div className="flex items-center gap-4 text-slate-400 font-medium">
-            <button onClick={() => setActiveTab('journey')} className="hover:text-white">
-              Overview
-            </button>
-            <button onClick={() => setActiveTab('menu')} className="hover:text-white">
-              Menu Catalog
-            </button>
-            <button onClick={() => setActiveTab('tables')} className="hover:text-white">
-              Table QR Tokens
-            </button>
-            <button onClick={() => setActiveTab('security')} className="hover:text-white">
-              Supabase RLS
-            </button>
-          </div>
-        </div>
-      </footer>
+      {/* Rich Footer */}
+      <Footer onNavigateTab={setActiveTab} />
 
       {/* Printable QR Code Modal */}
       <QrCodeModal
