@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { StoreProvider, useStore } from './context/StoreContext';
 import { Header } from './components/Header';
-import { JourneyTimeline } from './components/JourneyTimeline';
 import { CustomerMenuView } from './components/views/CustomerMenuView';
 import { KitchenKdsView } from './components/views/KitchenKdsView';
 import { FloorStaffView } from './components/views/FloorStaffView';
@@ -31,7 +30,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-import { FromScanToServeOverview } from './components/story/FromScanToServeOverview';
+import { CinematicStoryOverview } from './components/story/CinematicStoryOverview';
 
 function MainAppContent() {
   const {
@@ -75,11 +74,8 @@ function MainAppContent() {
           onOpenAuthModal={() => setShowAuthScreen(true)}
         />
 
-        {/* Storytelling Timeline Ribbon */}
-        <JourneyTimeline />
-
         {/* Operational Modules Navigation Tabs Bar */}
-        <div className="bg-slate-900 border-b border-slate-800 px-4 sm:px-6 py-2.5 overflow-x-auto">
+        {activeTab !== 'journey' && <div className="bg-slate-900 border-b border-slate-800 px-4 sm:px-6 py-2.5 overflow-x-auto">
           <div className="max-w-7xl mx-auto flex items-center gap-2 text-xs font-bold">
             <button
               onClick={() => setActiveTab('journey')}
@@ -186,13 +182,13 @@ function MainAppContent() {
               }`}
             >
               <ShieldCheck className="w-3.5 h-3.5 text-rose-400" />
-              <span>Supabase RLS</span>
+              <span>Security & RBAC</span>
             </button>
           </div>
-        </div>
+        </div>}
 
         {/* Tab Content Router */}
-        <main className="pb-12 max-w-7xl mx-auto px-4 sm:px-6 pt-6">
+        <main className={activeTab === 'journey' ? 'w-full' : 'pb-12 max-w-7xl mx-auto px-4 sm:px-6 pt-6'}>
           <AnimatePresence mode="wait">
             {activeTab === 'journey' && (
               <motion.div
@@ -201,7 +197,7 @@ function MainAppContent() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -15 }}
               >
-                <FromScanToServeOverview />
+                <CinematicStoryOverview />
               </motion.div>
             )}
 
@@ -219,7 +215,7 @@ function MainAppContent() {
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-slate-900 py-6 text-center text-xs text-slate-500 bg-slate-950">
+      {activeTab !== 'journey' && <footer className="border-t border-slate-900 py-6 text-center text-xs text-slate-500 bg-slate-950">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <span>SmartServe OS • Full-Stack Restaurant Management System</span>
           <div className="flex items-center gap-4 text-slate-400 font-medium">
@@ -233,11 +229,11 @@ function MainAppContent() {
               Table QR Tokens
             </button>
             <button onClick={() => setActiveTab('security')} className="hover:text-white">
-              Supabase RLS
+              Security & RBAC
             </button>
           </div>
         </div>
-      </footer>
+      </footer>}
 
       {/* Printable QR Code Modal */}
       <QrCodeModal
