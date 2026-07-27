@@ -1,0 +1,18 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Authenticated user profile data in SmartServe OS",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "fullName": { "type": "string" },
+        "role": { "type": "string", "enum": ["manager", "kitchen", "staff", "customer"] },
+        "createdAt": { "type": "string" },
+        "lastLogin": { "type": "string" }
+      },
+      "required": ["uid", "email", "fullName", "role"]
+    }
+  }
+}
