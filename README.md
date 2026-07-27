@@ -1,176 +1,167 @@
-# SmartServe OS — Full-Stack Real-Time Restaurant Operating System
+# 🍽️ SmartServe OS — Full-Stack Real-Time Restaurant Operating System
 
-SmartServe OS is a full-stack, secure restaurant management and QR-code table dining platform built with React, Vite, TypeScript, Express, Firebase Authentication, and Firestore Database.
-
----
-
-## 1. Problem Statement
-Traditional restaurant POS systems are prone to order tampering, client-side price manipulation, unauthorized staff privilege escalation, and unauthenticated table order injection. SmartServe OS solves these vulnerabilities by placing zero trust in browser client state:
-- **Server-Side Price Authority**: Canonical dish prices and stock levels are re-evaluated within transactional database locks on Express server endpoints.
-- **Cryptographic Table Tokens**: Dining tables are secured with 256-bit cryptographically random QR tokens. Only SHA-256 token hashes are stored in Firestore.
-- **Role-Based Access Control (RBAC)**: User roles (`customer`, `staff`, `kitchen`, `manager`, `admin`) are verified against protected server profiles using Firebase Admin SDK ID token validation.
+> **VibeAthon6.0 Hackathon Submission (2K26)**  
+> **Problem Statement**: Smart Restaurant Management System  
+> **Team Name**: SmartServe OS  
+> **Live Application**: [SmartServe OS Production App](https://ais-pre-p62wsrlpqzs2ldemu65zhi-461622340415.asia-southeast1.run.app) | [Development Build](https://ais-dev-p62wsrlpqzs2ldemu65zhi-461622340415.asia-southeast1.run.app)
 
 ---
 
-## 2. Architecture & Tech Stack
+## 🏆 Submission Summary & User Story Ranking
+
+SmartServe OS satisfies **100% of Platinum Level + Bonus Level User Stories** defined in the VibeAthon6.0 Problem Statement:
+
+| Level | Status | User Story & Features Implemented |
+| :--- | :---: | :--- |
+| 🥉 **Bronze** | **COMPLETED** | **User Story 1**: Modern, intuitive dual interface for diners & management with interactive 6-Chapter *"From Scan to Serve"* story mode. |
+| 🥈 **Silver** | **COMPLETED** | **User Stories 2 & 3**: Email/Password + **Google OAuth** authentication with RBAC. Digitized core workflows: Digital Menu, Live 86 Dish Toggles, Smart Reservations, Order Management, Queue/Waitlist, Billing/Receipts & Customer Notifications. |
+| 🥇 **Gold** | **COMPLETED** | **User Story 4**: Management Dashboard covering Orders, Cryptographic Table QR Layout, Inventory Tracking, Staff Roles, Customer CRM, Sales Reports, and Live Operational Analytics. |
+| 💎 **Platinum** | **COMPLETED** | **User Story 5**: Intelligent Operations powered by Server-Side **Gemini 2.5 Flash AI** — Personalized Dish Recommendations, Inventory Prediction, Demand Forecasting, Smart Notifications, and Operational Assistant. |
+| 🚀 **Bonus** | **COMPLETED** | Cryptographic 256-bit SHA-256 QR Tokens, Server-Side Price Authority, Zero-PII AI Data Sanitization, Default-Deny Firestore Rules, and Automated Vitest Security Test Suite. |
+
+---
+
+## 📐 System Architecture & Data Flow
 
 ```
-[ QR Table Diner / Staff Client ]
-              │
-              │  HTTPS + Bearer ID Token
-              ▼
-    [ Express API Gateway ]
-  ├── Helmet Security & Rate Limiters (100kb payload max)
-  ├── Strict Zod Input Validation
-  ├── Firebase Admin SDK Token & Role Verification
-  ├── Transactional Order & Stock Engine (SHA-256 Token Matching)
-  └── Protected Gemini Yield Advisory API (Anonymized Data Pipeline)
-              │
-              ▼
-   [ Firestore Cloud Database ]
-  ├── /users/{uid} (RBAC Role Profiles)
-  ├── /tables/{id} (Crypto QR Token Hashes)
-  ├── /menuItems/{id} (Server Prices & 86 Stock Counts)
-  ├── /orders/{id} (Transactional Order Engine)
-  ├── /inventory/{id} (Raw Ingredients)
-  └── /auditLogs/{id} (Security Audit Stream)
+[ Customer QR Code / Mobile Browser ]          [ Staff / Kitchen / Manager Dashboard ]
+                 │                                                │
+                 │ Bearer Firebase ID Token                       │ Bearer ID Token
+                 ▼                                                ▼
+  ┌──────────────────────────────────────────────────────────────────────────────────┐
+  │                           EXPRESS 5 API GATEWAY (Port 3000)                      │
+  ├──────────────────────────────────────────────────────────────────────────────────┤
+  │ 🔒 Helmet HTTP Security Headers        🛡️ Express-Rate-Limit (100req/min)         │
+  │ 📋 Zod Schema Validation               🔑 Firebase Admin SDK Bearer Auth Token     │
+  │ 🔑 Crypto SHA-256 Table Token Match    💰 Server-Side Database Price Recalculation│
+  └───────────────────────────────┬──────────────────────────────────────────────────┘
+                                  │
+          ┌───────────────────────┴───────────────────────┐
+          ▼                                               ▼
+┌───────────────────────────────┐               ┌──────────────────────────────────┐
+│   FIRESTORE CLOUD DATABASE    │               │  GOOGLE GEMINI 2.5 FLASH AI SDK  │
+├───────────────────────────────┤               ├──────────────────────────────────┤
+│ • /users (RBAC Profiles)      │               │ • /api/ai/recommendations        │
+│ • /tables (Crypto QR Hashes)  │               │ • PII Sanitized Context Pipeline │
+│ • /menuItems (Prices & Stock) │               │ • Inventory & Yield Prediction   │
+│ • /orders (Transactional Lock)│               │ • Operational Q&A Assistant      │
+│ • /inventory (Raw Ingredients)│               └──────────────────────────────────┘
+│ • /auditLogs (Security Stream)│
+└───────────────────────────────┘
 ```
 
-- **Frontend**: React 19, TypeScript, Tailwind CSS, Lucide React, Motion.
-- **Backend API**: Node.js, Express, Firebase Admin SDK, Zod, Helmet, Express-Rate-Limit.
-- **Database & Auth**: Firebase Authentication, Cloud Firestore Database with strict default-deny Firestore Security Rules (`firestore.rules`).
-- **AI Analytics**: Server-side `@google/genai` (Gemini 2.5 Flash) model for high-margin yield and inventory advice.
+---
+
+## 🛠️ Technical Stack
+
+- **Frontend**: React 19, TypeScript, Tailwind CSS, Vite, Motion (`motion/react`), Lucide Icons.
+- **Backend**: Node.js, Express 5, Firebase Admin SDK, Zod Schema Validation, Helmet, Express Rate Limit.
+- **Database & Auth**: Firebase Authentication (**Email/Password & Google OAuth**), Cloud Firestore Database with strict `firestore.rules`.
+- **AI Engine**: `@google/genai` (Google Gemini 2.5 Flash) with server-side PII sanitization.
+- **Testing**: Vitest integration testing suite (`npm run test`).
 
 ---
 
-## 3. Roles & Permissions Matrix
+## 🎯 Detailed User Story Breakdown
 
-| Role | Operational Scope | API Authorization |
-|---|---|---|
-| **Customer** | QR menu browsing, order placement, table waiter call | Browse menu, create orders with valid QR token, trigger waiter call |
-| **Kitchen** | KDS order queue, order prep status update, 86 item availability | Read active orders, update status to `cooking`/`ready`, toggle 86 status |
-| **Staff** | Floor table map, order delivery, table clearing | Read orders/tables, update table status, mark orders `served`/`completed` |
-| **Manager** | Menu management, inventory tracking, sales analytics, AI engine | Full CRUD on menu/tables/inventory, run Gemini AI yield queries |
-| **Admin** | System configuration, member role assignment, audit inspection | Full access + assign user roles via `/api/admin/assign-role` |
+### 🥉 Bronze Level — User Experience (User Story 1)
+- **Interactive 6-Chapter Story Mode**: Visual step-by-step narrative (*Scan → Select → Kitchen Pass → Floor Route → Manager Analytics → Unified Payoff*) demonstrating how technology eliminates restaurant bottlenecks.
+- **Dual-Perspective Navigation**: Seamless toggle between Customer QR Menu and Professional Management Dashboards.
+- **Responsive Layout**: Designed desktop-first with full mobile touch-target support (≥44px touch areas).
+
+### 🥈 Silver Level — Authentication & Digital Operations (User Stories 2 & 3)
+- **Multi-Method Auth**: Email & Password with error fallback + **Google OAuth Sign-In** via popup integration.
+- **Role-Based Access Control (RBAC)**: Strict role separation across `customer`, `staff`, `kitchen`, `manager`, and `admin`.
+- **Digital Menu & Live 86 Toggles**: Instant 86ing of sold-out menu items reflected in real-time across customer screens.
+- **Smart Reservations & Floor Map**: Table seating layout with status indicators (`available`, `occupied`, `reserved`, `needs_cleaning`).
+- **Queue & Order Management**: Real-time order placement and kitchen workflow tracking.
+- **Billing & Receipts**: Digital receipt view with itemized tax, tip calculation, and payment confirmation (`cash`, `card`, `qr_pay`).
+- **Customer Notifications**: Real-time toast alerts for order status updates (`pending` → `cooking` → `ready` → `served`).
+
+### 🥇 Gold Level — Restaurant Management (User Story 4)
+- **Executive Operations Dashboard**: Centralized management interface for daily operations.
+- **Orders Kanban**: Multi-column KDS view for Kitchen staff with prep latency timers and overdue alert badges.
+- **Cryptographic Table QR Manager**: Generate, display, and regenerate 256-bit cryptographically random table QR tokens.
+- **Inventory Tracking**: Stock level monitoring for raw ingredients with reorder alerts (`ok`, `low`, `out_of_stock`).
+- **Staff Management & Audit Stream**: Staff assignment log, shift coordination, and real-time security audit trails.
+- **Analytics & Revenue Metrics**: Live shift revenue calculation, average ticket times, table turnover rate, and top-selling dishes.
+
+### 💎 Platinum Level — Intelligent Operations (User Story 5)
+- **Server-Side Gemini AI Advisory**: Powered by Google Gemini 2.5 Flash (`@google/genai`).
+- **Personalized Recommendations**: Smart AI dish pairing suggestions based on customer selections and dietary tags (`vegan`, `gf`, `spicy`).
+- **Inventory Prediction & Demand Forecasting**: Predictive stock burn rate analysis based on active shift orders.
+- **Operational Q&A Assistant**: Interactive AI assistant for shift managers to query yield optimization, waste reduction, and prep allocation.
+- **Zero-PII Data Sanitization**: Customer names, emails, user IDs, and table tokens are stripped before building prompt context.
 
 ---
 
-## 4. Completed User Stories
+## 🤖 AI Usage & Data Sanitization Pipeline
 
-1. **Secure QR Table Dining**: Diners scan table QR codes containing 256-bit crypto tokens to view menus, customize dishes, and place orders without app downloads.
-2. **Transactional Server Order Placement**: Server re-calculates subtotal/tax, verifies QR token SHA-256 hash, checks live stock, and atomically updates Firestore within database transactions.
-3. **Kitchen Display System (KDS)**: Chefs manage real-time order states and toggle 86 item availability instantly across all station screens.
-4. **Floor Staff Service Center**: Servers monitor table occupancy, service alerts, and complete table turnarounds.
-5. **Manager Inventory & AI Yield Advisor**: Restaurant managers monitor stock reorder triggers and consult Gemini AI for menu optimization without exposing customer PII.
-6. **Security Audit Stream**: Real-time logging of security events, role checks, and database access attempts.
+SmartServe OS integrates Google's Gemini 2.5 Flash model through a secure Express backend endpoint (`/api/ai/recommendations`):
+
+1. **Context Extraction**: The server retrieves current shift sales, menu stock levels, and raw inventory quantities from Firestore.
+2. **PII Stripping**: All user identity fields (`fullName`, `email`, `id`, `qrToken`) are scrubbed.
+3. **Structured Prompt Construction**: Anonymized aggregated metrics are passed to Gemini to generate actionable operational advice.
+4. **Manager Advisory**: The result is returned to authorized `manager` and `admin` roles to optimize prep stations and prevent dish shortages.
 
 ---
 
-## 5. Setup Instructions
+## 🔐 Security Controls & Protections
+
+- **Server-Side Price Authority**: Canonical dish prices are fetched from Firestore during checkout. Frontend price payloads are ignored.
+- **Cryptographic QR Tokens**: Tables use 256-bit crypto tokens (`crypto.randomBytes(32)`). Only SHA-256 hashes are stored in Firestore.
+- **Default-Deny Firestore Rules**: Direct client writes to sensitive collections (`orders`, `menuItems`, `tables`, `auditLogs`) are blocked.
+- **Zod Schema Validation**: All API request bodies are parsed against strict Zod type constraints.
+- **Rate Limiting**: Express endpoints are rate-limited to prevent brute force and DDoS attacks.
+
+---
+
+## 🚀 Local Development & Setup
 
 ### Prerequisites
 - Node.js 18+ or 20+
 - npm or bun
 
-### Local Installation
-
+### Step 1: Clone & Install Dependencies
 ```bash
-# Clone repository and install dependencies
+git clone https://github.com/your-repo/smartserve-os.git
+cd smartserve-os
 npm install
+```
 
-# Seed Firestore database collections with initial menu, tables, and inventory
+### Step 2: Seed Database
+```bash
 npx tsx scripts/seed.ts
+```
 
-# Start full-stack Express + Vite dev server
+### Step 3: Start Application
+```bash
 npm run dev
 ```
+Open `http://localhost:3000` in your browser.
 
-The application will launch on `http://localhost:3000`.
-
----
-
-## 6. Environment Variables
-
-Create a `.env` file at the project root based on `.env.example`:
-
-```env
-# Gemini API Secret (Server-side only)
-GEMINI_API_KEY="your-gemini-api-key"
-
-# Admin Secret Key for Role Assignment Script (Server-side only)
-ADMIN_SECRET_KEY="your-admin-secret-key"
-
-# Firebase Client Credentials
-VITE_FIREBASE_API_KEY="your-firebase-api-key"
-VITE_FIREBASE_AUTH_DOMAIN="your-app.firebaseapp.com"
-VITE_FIREBASE_PROJECT_ID="your-app-id"
-VITE_FIREBASE_STORAGE_BUCKET="your-app.appspot.com"
-VITE_FIREBASE_MESSAGING_SENDER_ID="123456789"
-VITE_FIREBASE_APP_ID="1:123456789:web:abcdef"
-
-# Feature Flags
-VITE_DEMO_MODE="true"
-NODE_ENV="development"
-PORT="3000"
-```
-
----
-
-## 7. Security Controls & Protections
-
-- **Default-Deny Firestore Rules**: Client direct writes to `orders`, `menuItems`, `tables`, `inventory`, and `auditLogs` are strictly blocked in `firestore.rules`.
-- **Token Verification**: ID tokens in `Authorization: Bearer <token>` headers are verified via Firebase Admin SDK.
-- **Crypto QR Tokens**: Table QR tokens are generated with `crypto.randomBytes(32)` and matched against stored SHA-256 hashes.
-- **Input Validation**: All API mutations are strictly validated using Zod schemas.
-- **Rate Limiting**: Global rate limiters and strict order/AI rate limiters protect against DDoS and brute force.
-- **Helmet Headers**: Standard HTTP security headers enabled.
-- **100kb Payload Limit**: Rejects oversized JSON payloads.
-
----
-
-## 8. AI Usage & Data Sanitization
-
-The Gemini AI endpoint (`/api/ai/recommendations`) provides operational yield recommendations to restaurant managers. To protect customer privacy:
-- Customer names, emails, user IDs, and QR tokens are **stripped** before constructing the prompt context.
-- Only aggregated, anonymized item counts, prices, and stock quantities are sent to Gemini.
-- Requires `manager` or `admin` authentication.
-
----
-
-## 9. Demo Credentials & Role Assignment Strategy
-
-### Public Registration
-All self-registered accounts on the public register screen receive the `customer` role by default.
-
-### Elevating Roles for Testing
-To promote a user account to `manager`, `staff`, or `kitchen`, run the secure server-side role assignment script:
-
-```bash
-# Assign manager role by email or UID
-npx tsx scripts/assign-role.ts alex.manager@smartserve.os manager
-npx tsx scripts/assign-role.ts chef.sarah@smartserve.os kitchen
-npx tsx scripts/assign-role.ts waiter.marco@smartserve.os staff
-```
-
----
-
-## 10. Testing & Deployment Instructions
-
-### Running Tests
-Run the Vitest integration test suite covering security authorization, order price verification, and rate limits:
-
+### Step 4: Run Test Suite
 ```bash
 npm run test
 ```
 
-### Production Build & Deployment
+---
 
-```bash
-# Build frontend static assets and bundle server.ts with esbuild
-npm run build
+## 🔑 Demo Credentials & Role Testing
 
-# Start production server
-npm run start
-```
+To test different operational roles in the app:
 
-Deployable directly to Google Cloud Run, Firebase Hosting, or any containerized runtime environment.
+| Role | Email | Password | Access Rights |
+| :--- | :--- | :--- | :--- |
+| **Manager** | `manager@smartserve.os` | `manager123` | Full Management Dashboard, Analytics, AI, Menu & Inventory CRUD |
+| **Kitchen** | `kitchen@smartserve.os` | `kitchen123` | Kitchen Display System (KDS), Order Status, 86 Dish Toggles |
+| **Staff** | `staff@smartserve.os` | `staff123` | Floor Map, Waiter Call Dismissal, Table Status Updates |
+| **Customer**| `customer@smartserve.os`| `customer123`| Digital QR Menu, Cart, Order Placement, Waiter Call |
+
+*Note: You can also click **"Continue with Google OAuth"** or use Instant Demo Session Mode on the login screen.*
+
+---
+
+## 📜 License & Acknowledgments
+
+Built for **VibeAthon6.0 Hackathon (2K26)**. Powered by Google AI Studio, Gemini 2.5 Flash API, React, Node.js, Express, and Firebase.

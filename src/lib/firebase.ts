@@ -6,6 +6,8 @@ import {
   sendPasswordResetEmail,
   signOut,
   onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithPopup,
   User,
 } from 'firebase/auth';
 import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
@@ -24,6 +26,8 @@ export {
   sendPasswordResetEmail,
   signOut,
   onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithPopup,
   doc,
   setDoc,
   getDoc,
